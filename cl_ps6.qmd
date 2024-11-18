@@ -1,0 +1,370 @@
+---
+title: "Problem Set 6 - Waze Shiny Dashboard"
+author: "Peter Ganong, Maggie Shi, and Andre Oviedo"
+date: today
+format: 
+  pdf:
+    include-in-header: 
+       text: |
+         \usepackage{fvextra}
+         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+include-before-body:
+  text: |
+    \RecustomVerbatimEnvironment{verbatim}{Verbatim}{
+      showspaces = false,
+      showtabs = false,
+      breaksymbolleft={},
+      breaklines
+    }
+---
+1. **ps6:** Due Sat 23rd at 5:00PM Central. Worth 100 points (80 points from questions, 10 points for correct submission and 10 points for code style) + 10 extra credit. 
+
+We use (`*`) to indicate a problem that we think might be time consuming. 
+
+# Steps to submit (10 points on PS6) {-}
+
+1. "This submission is my work alone and complies with the 30538 integrity
+policy." Add your initials to indicate your agreement: \*\*CL\*\*
+2. "I have uploaded the names of anyone I worked with on the problem set **[here](https://docs.google.com/forms/d/185usrCREQaUbvAXpWhChkjghdGgmAZXA3lPWpXLLsts/edit)**"  \*\*\_\_\*\* (2 point)
+3. Late coins used this pset: \*\*0\*\* Late coins left after submission: \*\*X\*\*
+
+4. Before starting the problem set, make sure to read and agree to the terms of data usage for the Waze data [here](https://canvas.uchicago.edu/courses/59054/quizzes/130617).
+
+5. Knit your `ps6.qmd` as a pdf document and name it `ps6.pdf`.
+6. Submit your `ps6.qmd`, `ps6.pdf`, `requirements.txt`, and all created folders (we will create three Shiny apps so you will have at least three additional folders) to the gradescope repo assignment (5 points).
+7. Submit `ps6.pdf` and also link your Github repo via Gradescope (5 points)
+8. Tag your submission in Gradescope. For the Code Style part (10 points) please tag the whole correspondingsection for the code style rubric.
+
+*Notes: see the [Quarto documentation (link)](https://quarto.org/docs/authoring/figures.html) for directions on inserting images into your knitted document.*
+
+*IMPORTANT: For the App portion of the PS, in case you can not arrive to the expected functional dashboard we will need to take a look at your `app.py` file. You can use the following code chunk template to "import" and print the content of that file. Please, don't forget to also tag the corresponding code chunk as part of your submission!*
+
+```{python}
+#| echo: true
+#| eval: false
+
+def print_file_contents(file_path):
+    """Print contents of a file."""
+    try:
+        with open(file_path, 'r') as f:
+            content = f.read()
+            print("```python")
+            print(content)
+            print("```")
+    except FileNotFoundError:
+        print("```python")
+        print(f"Error: File '{file_path}' not found")
+        print("```")
+    except Exception as e:
+        print("```python") 
+        print(f"Error reading file: {e}")
+        print("```")
+
+print_file_contents("./top_alerts_map_byhour/app.py") # Change accordingly
+```
+
+```{python} 
+#| echo: false
+
+# Import required packages.
+import pandas as pd
+import altair as alt 
+import pandas as pd
+from datetime import date
+import numpy as np
+alt.data_transformers.disable_max_rows() 
+
+import json
+```
+
+# Background {-}
+
+## Data Download and Exploration (20 points){-} 
+
+1. 
+
+```{python}
+import zipfile
+import os
+import pandas as pd
+
+# unzip waze_data
+zip_file_path = "/Users/charismalambert/Downloads/waze_data.zip"
+extraction_path = "extracted_files"
+
+with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+    zip_ref.extractall(extraction_path)
+
+files = os.listdir(extraction_path)
+#print("Files in zip folder:", files)
+
+# load the waze_data_sample into pandas dataframe 
+waze_sample_path = os.path.join(extraction_path, "waze_data_sample.csv")
+waze_sample_df = pd.read_csv(waze_sample_path)
+
+# give dtypes their Altair syntaz
+types = ["Q", "N", "Q", "Q", "N", "N", "N", "N", "N", "O", "O", "Q", "O", "object", "object", "object"]
+columns = waze_sample_df.columns
+
+# report variable names and data types 
+variable_names = pd.DataFrame({
+  "Variable": waze_sample_df.columns, 
+  "Data Type": types
+})
+print(f"The variable names and Altair data types in waze_data_sample.csv are: {variable_names}")
+```
+
+2. 
+
+```{python}
+import altair as alt
+
+# load waze_data
+waze_path = os.path.join(extraction_path, "waze_data.csv")
+waze_df = pd.read_csv(waze_sample_path)
+waze_df.columns
+
+# dataframe of number of null and number of non-null values within waze_df
+waze_df_null = waze_df.isnull().sum()
+waze_df_notnull = waze_df.notnull().sum()
+
+null_df = pd.DataFrame({
+  "Variable": waze_df.columns,
+  "Is Null": waze_df_null,
+  "Not Null": waze_df_notnull
+})
+
+null_df = null_df.melt(id_vars = "Variable", var_name = "Null Category", value_name ="Count")
+
+null_chart = alt.Chart(null_df).mark_bar().encode(
+  x = alt.X("Variable:N"),
+  y = alt.Y("Count:Q"), 
+  color = alt.Color("Null Category:N"),
+).properties(
+  title = "Count of NULL and Non-NULL Observations by Variable",
+  width = 900
+)
+null_chart
+
+# Citation: On my first attempt, graph appeared blank so I put my code into a ChatGPT query which updated the null_df to be stacked (line 137) as requested in the problem. I updated my code with that line and also included the color variability by Null Category in the graph. 
+```
+
+3. 
+
+```{python}
+# print unique values for type and subtype
+unique_types = waze_df["type"].unique()
+unique_subtypes = waze_df["subtype"].unique()
+#print("Unique Types:", unique_types)
+#print("Unique Subtypes:", unique_subtypes)
+
+# how many types have a subtype that is NA
+type_wsubtype_na = waze_df[waze_df["subtype"].isna()]["type"].nunique()
+#print(type_wsubtype_na)
+
+# identify which type has subtype that could have sub-subtypes
+subsub_type = waze_df.groupby(["type", "subtype"]).size().reset_index(name = "count")
+subsub_type
+
+# keep NA subtype 
+waze_df["subtype"] = waze_df["subtype"].fillna("Unclassified")
+```
+
+List of Hierarcg Levels
+type = Accident
+  subtype 1 = Major
+  subtype 2 = Minor
+  subtype 3 = Unclassified
+type = Hazard
+  subtype 1 = On Road
+    subsub 1 = Car Stopped
+    subsub 2 = Construction
+    subsub 3 = Emergency Vehicle
+    subsub 4 = Lane Closed
+    subsub 5 = Object
+    subsub 6 = Pot Hole
+    subsub 7 = Road Kill
+    subsub 8 = Traffic Light Broken
+  subtype 2 = On Shoulder
+    subsub 1 = Car Stopped
+  subtype 3 = Weather
+    subsub 1 = Flood
+    subsub 2 = Fog
+    subsub 3 = Heavy Snow 
+type = Traffic
+  subtype 1 = Heavy 
+  subtype 2 = Moderate
+  subtype 4 = Standstill
+type = Road Closed
+  subtype 1 = Event
+
+4. 
+```{python}
+# create crosswalk dataframe
+crosswalk_manual ={
+"type": ["ACCIDENT", "ACCIDENT", "ACCIDENT", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "JAM", "JAM", "JAM", "ROAD_CLOSED", "ROAD_CLOSED"],
+
+"subtype" : ["ACCIDENT_MAJOR", "ACCIDENT_MINOR", "ACCIDENT_UNCLASSIFIED", "HAZARD_ON_ROAD", "HAZARD_ON_ROAD_CAR_STOPPED", "HAZARD_ON_ROAD_CONSTRUCTION", "HAZARD_ON_ROAD_EMERGENCY_VEHICLE", "HAZARD_ON_ROAD_LANE_CLOSED", "HAZARD_ON_ROAD_OBJECT", "HAZARD_ON_ROAD_POT_HOLE", "HAZARD_ON_ROAD_ROAD_KILL", "HAZARD_ON_ROAD_TRAFFIC_LIGHT_FAULT", "HAZARD_ON_SHOULDER_CAR_STOPPED", "HAZARD_WEATHER", "HAZARD_WEATHER_FLOOD", "HAZARD_WEATHER_FOG", "HAZARD_WEATHER_HEAVY_SNOW", "JAM_HEAVY_TRAFFIC", "JAM_MODERATE_TRAFFIC", "JAM_STAND_STILL_TRAFFIC", "ROAD_CLOSED_EVENT", "ROAD_CLOSED_UNCLASSIFIED"], 
+
+"updated_type" : ["ACCIDENT", "ACCIDENT", "ACCIDENT", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "TRAFFIC", "TRAFFIC", "TRAFFIC", "ROAD_CLOSED", "ROAD_CLOSED"],
+
+"updated_subtype" : ["MAJOR", "MINOR", "UNCLASSIFIED", "ON ROAD", "ON ROAD","ON ROAD", "ON ROAD", "ON ROAD", "ON ROAD", "ON ROAD", "ON ROAD", "ON ROAD", "ON SHOULDER", "WEATHER", "WEATHER", "WEATHER", "WEATHER", "HEAVY", "MODERATE", "STANDSTILL", "EVENT", "UNCLASSIFIED"], 
+
+"updated_subsubtype" : ["UNCLASSIFIED", "UNCLASSIFIED", "UNCLASSIFIED", "UNCLASSIFIED", "CAR STOPPED", "CONSTRUCTION", "EMERGENCY VEHICLE","LANE CLOSED", "OBJECT", "POT HOLE", "ROAD KILL", "TRAFFIC LIGHT BROKEN", "CAR STOPPED", "UNCLASSIFIED", "FLOOD", "FOG", "HEAVY SNOW", "UNCLASSIFIED", "UNCLASSIFIED", "UNCLASSIFIED", "UNCLASSIFIED", "UNCLASSIFIED"]
+} 
+crosswalk_df = pd.DataFrame(crosswalk_manual)
+
+# merge crosswalk df and waze_df to get updated subtype and subsub type
+merged_df = waze_df.merge(crosswalk_df, on = ["type", "subtype"], how = "left")
+
+# fill NA substype as Unclassified 
+merged_df[["updated_type", "updated_subtype", "updated_subsubtype"]] = merged_df[["updated_type", "updated_subtype", "updated_subsubtype"]].fillna("UNCLASSIFIED")
+
+# number of unclassified accidents 
+unclassified_accident_count = merged_df[(merged_df["type"] == "ACCIDENT") & (merged_df["updated_subtype"] == "UNCLASSIFIED")].shape[0]
+print(f"The are {unclassified_accident_count} rows for Accident - Unclassified")
+
+```
+
+# App #1: Top Location by Alert Type Dashboard (30 points){-}
+
+1. 
+
+a. 
+```{python}
+
+```
+
+b. 
+```{python}
+
+```
+
+
+c. 
+```{python}
+
+```
+
+d. 
+```{python}
+
+```
+
+3. 
+    
+a. 
+
+```{python}
+
+```
+    
+
+b. 
+```{python}
+# MODIFY ACCORDINGLY
+file_path = "./top_alerts_map/chicago-boundaries.geojson"
+#----
+
+with open(file_path) as f:
+    chicago_geojson = json.load(f)
+
+geo_data = alt.Data(values=chicago_geojson["features"])
+
+```
+
+4. 
+
+```{python}
+
+```
+
+5. 
+
+a. 
+
+```{python}
+
+```
+
+b. 
+```{python}
+
+```
+
+c. 
+```{python}
+
+```
+
+d. 
+```{python}
+
+```
+
+e. 
+
+# App #2: Top Location by Alert Type and Hour Dashboard (20 points) {-}
+
+1. 
+
+a. 
+
+
+    
+b. 
+```{python}
+
+```
+
+c.
+
+```{python}
+
+```
+    
+
+2.
+
+a. 
+
+
+
+b. 
+
+
+c. 
+
+
+# App #3: Top Location by Alert Type and Hour Dashboard (20 points){-}
+
+1. 
+
+
+a. 
+
+b. 
+
+```{python}
+
+```
+
+2. 
+
+a. 
+
+
+b. 
+    
+3. 
+
+a. 
+    
+
+b. 
+
+
+c. 
+
+
+d.
