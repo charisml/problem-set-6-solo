@@ -200,7 +200,7 @@ type = Road Closed
 
 4. 
 ```{python}
-# create crosswalk dataframe
+# create crosswalk dataframe manually 
 crosswalk_manual ={
 "type": ["ACCIDENT", "ACCIDENT", "ACCIDENT", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "JAM", "JAM", "JAM", "ROAD_CLOSED", "ROAD_CLOSED"],
 
@@ -219,6 +219,7 @@ merged_df = waze_df.merge(crosswalk_df, on = ["type", "subtype"], how = "left")
 
 # fill NA substype as Unclassified 
 merged_df[["updated_type", "updated_subtype", "updated_subsubtype"]] = merged_df[["updated_type", "updated_subtype", "updated_subsubtype"]].fillna("UNCLASSIFIED")
+
 
 # number of unclassified accidents 
 unclassified_accident_count = merged_df[(merged_df["type"] == "ACCIDENT") & (merged_df["updated_subtype"] == "UNCLASSIFIED")].shape[0]
