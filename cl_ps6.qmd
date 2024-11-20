@@ -237,7 +237,6 @@ crosswalk_manual ={
 } 
 crosswalk_df = pd.DataFrame(crosswalk_manual)
 crosswalk_df
-
 ```
 
 ```{python}
@@ -273,6 +272,7 @@ merged_df["binned_lat"] = np.floor(merged_df["latitude"]/.01) * .01
 merged_df["binned_long"] = np.floor(merged_df["longitude"]/.01) * .01
 
 bin_count = (merged_df.groupby(["binned_lat", "binned_long"]).size().reset_index(name = "count"))
+print(bin_count)
 max_binned_combo = bin_count.loc[bin_count["count"].idxmax()]
 print(f"The latitude-longitude combination with the greated number of observations is: \n {max_binned_combo}")
 ```
@@ -280,13 +280,9 @@ print(f"The latitude-longitude combination with the greated number of observatio
 
 c. 
 ```{python}
-# select type and subtype
-filter_for_type = merged_df[(merged_df["type"] == ) & (merged_df["subtype"] == )]
-
-filtered_for_type["binned_lat"] = np.floor(filtered_for_type["latitude"]/.01) * .01
-filtered_for_type["binned_long"] = np.floor(filtered_for_type["longitude"]/.01) * .01
-bin_count = (merged_df.groupby(["binned_lat", "binned_long"]).size().reset_index(name = "type_sub_count"))
-top_10 = bin_count.nlargest(10, "type_sub_count")
+alerts_df = merged_df.merge(bin_count, on = "binned_lat", how = "left")
+top_alerts_map = alerts_df[["type", "subtype", "binned_lat", "binned_lat", "count"]]
+top_10 = type_sub_bin.nlargest(10, "type_sub_count")
 ```
 
 d. 
