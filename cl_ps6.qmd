@@ -285,11 +285,11 @@ alerts_df = merged_df.merge(bin_count, on = ["binned_lat", "binned_long"], how =
 top_alerts_aggregated = alerts_df.groupby(["type", "subtype", "binned_lat", "binned_long"], as_index = False).agg({"count" : sum})
 
 top_alerts_aggregated = top_alerts_aggregated.sort_values(by = "count", ascending = False)
-print(top_alerts_aggregated.head(10))
+#print(top_alerts_aggregated.head(10))
 # filter for type and subtype
 # filter_df = top_alerts_aggrgated[(top_alerts_aggregated["type"] == type) & (top_alerts_aggregated["subtype"] == )]
 # top_10 = filter_df.sort_values("count", ascending = False).head(10)
-# top_10.tocsv("top_alerts_map.csv", index = False)
+top_alerts_aggregated.to_csv("top_alerts_map/top_alerts_map.csv", index = False)
 ```
 
 d. 
