@@ -164,55 +164,68 @@ type_wsubtype_na = waze_df[waze_df["subtype"].isna()]["type"].nunique()
 
 # identify which type has subtype that could have sub-subtypes
 subsub_type = waze_df.groupby(["type", "subtype"]).size().reset_index(name = "count")
-subsub_type
 
 # keep NA subtype 
 waze_df["subtype"] = waze_df["subtype"].fillna("Unclassified")
 ```
 
-List of Hierarcg Levels
+List of Hierarchy Levels
 type = Accident
-  subtype 1 = Major
-  subtype 2 = Minor
+  subtype 1 = Accident Major
+    subsub 1 = Major
+  subtype 2 = Accident Minor
+    subsub 2 = Minor
   subtype 3 = Unclassified
+    subsub 3 = Unclassified
 type = Hazard
-  subtype 1 = On Road
+  subtype 1 = Hazard On Road
+    subsub 1 = None
+    subsub 2 = Car Stopped
+    subsub 3 = Construction
+    subsub 4 = Emergency Vehicle
+    subsub 5 = Lane Closed
+    subsub 6 = Object
+    subsub 7 = Pot Hole
+    subsub 8 = Road Kill
+    subsub 9 = Traffic Light Fault
+  subtype 2 = Hazard On Shoulder
     subsub 1 = Car Stopped
-    subsub 2 = Construction
-    subsub 3 = Emergency Vehicle
-    subsub 4 = Lane Closed
-    subsub 5 = Object
-    subsub 6 = Pot Hole
-    subsub 7 = Road Kill
-    subsub 8 = Traffic Light Broken
-  subtype 2 = On Shoulder
-    subsub 1 = Car Stopped
-  subtype 3 = Weather
-    subsub 1 = Flood
-    subsub 2 = Fog
-    subsub 3 = Heavy Snow 
+  subtype 3 = Hazard Weather
+    subsub 1 = None
+    subsub 2 = Flood
+    subsub 3 = Fog
+    subsub 4 = Heavy Snow
 type = Traffic
-  subtype 1 = Heavy 
-  subtype 2 = Moderate
-  subtype 4 = Standstill
+  subtype 1 = Heavy Traffic
+    subsub 1 = None
+  subtype 2 = Moderate Traffic
+    subsub 2 = None
+  subtype 3 = Standstill Traffic
+    subsub 3 = None
+  subtype 4 = Unclassified
+    subsub 4 = Unclassified
 type = Road Closed
-  subtype 1 = Event
+  subtype 1 = Road Closed Event
+    subsub 1 = None
+  subtype 2 = Unclassified
+    subsub 2 = Unclassified
 
 4. 
 ```{python}
 # create crosswalk dataframe manually 
 crosswalk_manual ={
-"type": ["ACCIDENT", "ACCIDENT", "ACCIDENT", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "JAM", "JAM", "JAM", "ROAD_CLOSED", "ROAD_CLOSED"],
+"type": ["ACCIDENT", "ACCIDENT", "ACCIDENT", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "JAM", "JAM", "JAM", "JAM", "ROAD_CLOSED", "ROAD_CLOSED"],
 
-"subtype" : ["ACCIDENT_MAJOR", "ACCIDENT_MINOR", "ACCIDENT_UNCLASSIFIED", "HAZARD_ON_ROAD", "HAZARD_ON_ROAD_CAR_STOPPED", "HAZARD_ON_ROAD_CONSTRUCTION", "HAZARD_ON_ROAD_EMERGENCY_VEHICLE", "HAZARD_ON_ROAD_LANE_CLOSED", "HAZARD_ON_ROAD_OBJECT", "HAZARD_ON_ROAD_POT_HOLE", "HAZARD_ON_ROAD_ROAD_KILL", "HAZARD_ON_ROAD_TRAFFIC_LIGHT_FAULT", "HAZARD_ON_SHOULDER_CAR_STOPPED", "HAZARD_WEATHER", "HAZARD_WEATHER_FLOOD", "HAZARD_WEATHER_FOG", "HAZARD_WEATHER_HEAVY_SNOW", "JAM_HEAVY_TRAFFIC", "JAM_MODERATE_TRAFFIC", "JAM_STAND_STILL_TRAFFIC", "ROAD_CLOSED_EVENT", "ROAD_CLOSED_UNCLASSIFIED"], 
+"subtype" : ["ACCIDENT_MAJOR", "ACCIDENT_MINOR", "ACCIDENT_UNCLASSIFIED", "HAZARD_ON_ROAD", "HAZARD_ON_ROAD_CAR_STOPPED", "HAZARD_ON_ROAD_CONSTRUCTION", "HAZARD_ON_ROAD_EMERGENCY_VEHICLE", "HAZARD_ON_ROAD_LANE_CLOSED", "HAZARD_ON_ROAD_OBJECT", "HAZARD_ON_ROAD_POT_HOLE", "HAZARD_ON_ROAD_ROAD_KILL", "HAZARD_ON_ROAD_TRAFFIC_LIGHT_FAULT", "HAZARD_ON_SHOULDER_CAR_STOPPED", "HAZARD_WEATHER", "HAZARD_WEATHER_FLOOD", "HAZARD_WEATHER_FOG", "HAZARD_WEATHER_HEAVY_SNOW", "JAM_HEAVY_TRAFFIC", "JAM_MODERATE_TRAFFIC", "JAM_STAND_STILL_TRAFFIC", "JAM_UNCLASSIFIED", "ROAD_CLOSED_EVENT", "ROAD_CLOSED_UNCLASSIFIED"], 
 
-"updated_type" : ["ACCIDENT", "ACCIDENT", "ACCIDENT", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "TRAFFIC", "TRAFFIC", "TRAFFIC", "ROAD_CLOSED", "ROAD_CLOSED"],
+"updated_type" : ["ACCIDENT", "ACCIDENT", "ACCIDENT", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "HAZARD", "TRAFFIC", "TRAFFIC", "TRAFFIC", "TRAFFIC", "ROAD_CLOSED", "ROAD_CLOSED"],
 
-"updated_subtype" : ["MAJOR", "MINOR", "UNCLASSIFIED", "ON ROAD", "ON ROAD","ON ROAD", "ON ROAD", "ON ROAD", "ON ROAD", "ON ROAD", "ON ROAD", "ON ROAD", "ON SHOULDER", "WEATHER", "WEATHER", "WEATHER", "WEATHER", "HEAVY", "MODERATE", "STANDSTILL", "EVENT", "UNCLASSIFIED"], 
+"updated_subtype" : ["MAJOR", "MINOR", "UNCLASSIFIED", "ON ROAD",  "ON ROAD", "ON ROAD", "ON ROAD","ON ROAD", "ON ROAD", "ON ROAD", "ON ROAD", "ON ROAD", "ON SHOULDER", "WEATHER", "WEATHER", "WEATHER", "WEATHER", "HEAVY", "MODERATE", "STANDSTILL", "UNCLASSIFIED", "EVENT", "UNCLASSIFIED"], 
 
-"updated_subsubtype" : ["UNCLASSIFIED", "UNCLASSIFIED", "UNCLASSIFIED", "UNCLASSIFIED", "CAR STOPPED", "CONSTRUCTION", "EMERGENCY VEHICLE","LANE CLOSED", "OBJECT", "POT HOLE", "ROAD KILL", "TRAFFIC LIGHT BROKEN", "CAR STOPPED", "UNCLASSIFIED", "FLOOD", "FOG", "HEAVY SNOW", "UNCLASSIFIED", "UNCLASSIFIED", "UNCLASSIFIED", "UNCLASSIFIED", "UNCLASSIFIED"]
+"updated_subsubtype" : ["UNCLASSIFIED", "UNCLASSIFIED", "UNCLASSIFIED", "NONE", "CAR STOPPED", "CONSTRUCTION", "EMERGENCY VEHICLE","LANE CLOSED", "OBJECT", "POT HOLE", "ROAD KILL", "TRAFFIC LIGHT BROKEN", "CAR STOPPED", "NONE", "FLOOD", "FOG", "HEAVY SNOW", "NONE", "NONE", "NONE", "UNCLASSIFIED", "NONE", "UNCLASSIFIED"]
 } 
 crosswalk_df = pd.DataFrame(crosswalk_manual)
+print(crosswalk_df.shape)
 
 # merge crosswalk df and waze_df to get updated subtype and subsub type
 merged_df = waze_df.merge(crosswalk_df, on = ["type", "subtype"], how = "left")
@@ -220,11 +233,9 @@ merged_df = waze_df.merge(crosswalk_df, on = ["type", "subtype"], how = "left")
 # fill NA substype as Unclassified 
 merged_df[["updated_type", "updated_subtype", "updated_subsubtype"]] = merged_df[["updated_type", "updated_subtype", "updated_subsubtype"]].fillna("UNCLASSIFIED")
 
-
 # number of unclassified accidents 
 unclassified_accident_count = merged_df[(merged_df["type"] == "ACCIDENT") & (merged_df["updated_subtype"] == "UNCLASSIFIED")].shape[0]
 print(f"The are {unclassified_accident_count} rows for Accident - Unclassified")
-
 ```
 
 # App #1: Top Location by Alert Type Dashboard (30 points){-}
@@ -233,12 +244,23 @@ print(f"The are {unclassified_accident_count} rows for Accident - Unclassified")
 
 a. 
 ```{python}
+#print(merged_df["geoWKT"])
 
+merged_df[["longitude", "latitude"]] = merged_df["geoWKT"].str.extract(r"Point\((-?[\d.]+) (-?[\d.]+)\)").astype(float)
+merged_df
+
+#Citation: My query into ChatGPT-- "My geoWKT values are a string of Point(- value value), how can I use regex to extract the values to store as longitude and latitude."
 ```
 
 b. 
 ```{python}
+import numpy as np
+merged_df["binned_lat"] = np.floor(merged_df["latitude"]/.01) * .01
+merged_df["binned_long"] = np.floor(merged_df["longitude"]/.01) * .01
 
+binned_count = (merged_df.groupby(["binned_lat", "binned_long"]).size().reset_index(name = "count"))
+max_binned_combo = binned_count.loc[binned_count["count"].idmax()]
+print(f"The latitude-longitude combination with the greated number of observations is: {max_binned_combo}")
 ```
 
 
