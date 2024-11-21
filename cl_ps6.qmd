@@ -332,7 +332,7 @@ map = alt.Chart(geo_data).mark_geoshape(
     fill = "lightgray",
     stroke = "white",
     opacity = 0.5
-).project("identity").properties(
+).project("albersUsa").properties(
     width = 500,
     height = 300
 )
