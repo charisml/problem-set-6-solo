@@ -285,16 +285,31 @@ alerts_df = merged_df.merge(bin_count, on = ["binned_lat", "binned_long"], how =
 top_alerts_aggregated = alerts_df.groupby(["type", "subtype", "binned_lat", "binned_long"], as_index = False).agg({"count" : sum})
 
 top_alerts_aggregated = top_alerts_aggregated.sort_values(by = "count", ascending = False)
-#print(top_alerts_aggregated.head(10))
-# filter for type and subtype
-# filter_df = top_alerts_aggrgated[(top_alerts_aggregated["type"] == type) & (top_alerts_aggregated["subtype"] == )]
-# top_10 = filter_df.sort_values("count", ascending = False).head(10)
+
 top_alerts_aggregated.to_csv("top_alerts_map/top_alerts_map.csv", index = False)
 ```
 
-d. 
 ```{python}
+print(f"There are {len(top_alerts_aggregated)} rowd in this DataFrame.")
+```
 
+2. 
+```{python}
+import altair as alt
+# filter for type and subtype
+filter_for_type = top_alerts_aggregated[(top_alerts_aggregated["type"] == "JAM") & (top_alerts_aggregated["subtype"] ==  "JAM_HEAVY_TRAFFIC")]
+
+top_10 = filter_for_type.sort_values("count", ascending = False).head(10)
+
+# altair scatter plot of top 10 Jam - Heavy Traffic 
+chart = alt.Chart(top_10).mark_circle().encode(
+    x = alt.X("binned_long:Q", scale = alt.Scale(domain = [-90, 90])),
+    y = alt.Y("binned_lat:Q", scale = alt.Scale(domain = [-90, 90])),
+    size = alt.Size("count:Q"),
+).properties(
+    title = "Top 10 Alerts for Jam - Heavy Traffic"
+)
+chart
 ```
 
 3. 
@@ -302,14 +317,10 @@ d.
 a. 
 
 ```{python}
+import json
 
-```
-    
-
-b. 
-```{python}
 # MODIFY ACCORDINGLY
-file_path = "./top_alerts_map/chicago-boundaries.geojson"
+file_path = "/Users/charismalambert/Downloads/Boundaries - Neighborhoods.geojson"
 #----
 
 with open(file_path) as f:
@@ -317,12 +328,22 @@ with open(file_path) as f:
 
 geo_data = alt.Data(values=chicago_geojson["features"])
 
+map = alt.Chart(geo_data).mark_geoshape(
+    fill = "lightgray",
+    stroke = "white",
+    opacity = 0.5
+).project("identity").properties(
+    width = 500,
+    height = 300
+)
+map
 ```
 
 4. 
 
 ```{python}
-
+chicago_chart = chart + map
+chicago_chart
 ```
 
 5. 
