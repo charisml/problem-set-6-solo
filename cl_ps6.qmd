@@ -283,14 +283,14 @@ c.
 alerts_df = merged_df.merge(bin_count, on = ["binned_lat", "binned_long"], how = "left")
 
 top_alerts_aggregated = alerts_df.groupby(["type", "subtype", "binned_lat", "binned_long"], as_index = False).agg({"count" : sum})
-
+print(top_alerts_aggregated) # lat and long that are close should be in the same bin
 top_alerts_aggregated = top_alerts_aggregated.sort_values(by = "count", ascending = False)
-
-top_alerts_aggregated.to_csv("top_alerts_map/top_alerts_map.csv", index = False)
+top_alerts_aggregated
+#top_alerts_aggregated.to_csv("top_alerts_map/top_alerts_map.csv", index = False)
 ```
 
 ```{python}
-print(f"There are {len(top_alerts_aggregated)} rowd in this DataFrame.")
+print(f"There are {len(top_alerts_aggregated)} rows in this DataFrame.")
 ```
 
 2. 
@@ -300,16 +300,22 @@ import altair as alt
 filter_for_type = top_alerts_aggregated[(top_alerts_aggregated["type"] == "JAM") & (top_alerts_aggregated["subtype"] ==  "JAM_HEAVY_TRAFFIC")]
 
 top_10 = filter_for_type.sort_values("count", ascending = False).head(10)
+print(top_10)
+
+min_lat, max_lat = 41.86, 41.98
+min_long, max_long = -87.78, -87.64
 
 # altair scatter plot of top 10 Jam - Heavy Traffic 
 chart = alt.Chart(top_10).mark_circle().encode(
-    x = alt.X("binned_long:Q", scale = alt.Scale(domain = [-90, 90])),
-    y = alt.Y("binned_lat:Q", scale = alt.Scale(domain = [-90, 90])),
-    size = alt.Size("count:Q"),
+    x = alt.X("binned_long:Q", scale = alt.Scale(domain = [min_long, max_long]), title = "Longitude"),
+    y = alt.Y("binned_lat:Q", scale = alt.Scale(domain = [min_lat, max_lat]), title = "Latitude"),
+    size = alt.Size("count:Q", title = "Alert_Count"),
 ).properties(
     title = "Top 10 Alerts for Jam - Heavy Traffic"
-)
+) # map onto same coordinate reference system 
 chart
+
+#Citation: Googled max and min long and lat for Chicago so that the chart overlays the map seamlessly. 
 ```
 
 3. 
@@ -330,19 +336,15 @@ geo_data = alt.Data(values=chicago_geojson["features"])
 
 map = alt.Chart(geo_data).mark_geoshape(
     fill = "lightgray",
-    stroke = "white",
-    opacity = 0.5
-).project("albersUsa").properties(
-    width = 500,
-    height = 300
-)
+    stroke = "white"
+).project("equirectangular")
 map
 ```
 
 4. 
 
 ```{python}
-chicago_chart = chart + map
+chicago_chart = map + chart
 chicago_chart
 ```
 
