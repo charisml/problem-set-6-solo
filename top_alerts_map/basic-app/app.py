@@ -17,7 +17,7 @@ top_alerts["type_subtype"] = top_alerts["type"] + " - " + top_alerts["subtype"]
 
 app_ui = ui.page_fluid(
     ui.panel_title( "Select Type and Subtype"),
-    ui.input_select("type_subtype", "Select Type and Subtype", choices = top_alerts[type_subtype].unique()),
+    ui.input_select("type_subtype", "Select Type and Subtype", choices = top_alerts["type_subtype"].unique()),
     ui.output_text_verbatim("txt")
 )
 
