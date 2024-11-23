@@ -286,7 +286,7 @@ top_alerts_aggregated = alerts_df.groupby(["type", "subtype", "binned_lat", "bin
 print(top_alerts_aggregated) # lat and long that are close should be in the same bin
 top_alerts_aggregated = top_alerts_aggregated.sort_values(by = "count", ascending = False)
 top_alerts_aggregated
-#top_alerts_aggregated.to_csv("top_alerts_map/top_alerts_map.csv", index = False)
+top_alerts_aggregated.to_csv("top_alerts_map/top_alerts_map.csv", index = False)
 ```
 
 ```{python}
