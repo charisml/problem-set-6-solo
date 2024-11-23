@@ -7,7 +7,7 @@ import altair as alt
 
 # load data
 base_path = "/Users/charismalambert/Documents/GitHub/problem-set-6-solo/top_alerts_map"
-file_path = os.path.join(base_path, "top_alerts_aggregated.csv")
+file_path = os.path.join(base_path, "top_alerts_map.csv")
 top_alerts = pd.read_csv(file_path)
 
 top_alerts["type_subtype"] = top_alerts["type"] + " - " + top_alerts["subtype"]
