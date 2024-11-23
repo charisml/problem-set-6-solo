@@ -350,28 +350,17 @@ chicago_chart
 
 5. 
 
-a. 
 
-```{python}
+a. Screenshot at the end of the PDF
 
-```
+b. Screenshot at the end of the PDF
 
-b. 
-```{python}
+c. Screenshot at the end of the PDF
 
-```
+d. Where are Unclassified Jam's most common? Southside of Chicago
+Screenshot at the end of the PDF
 
-c. 
-```{python}
-
-```
-
-d. 
-```{python}
-
-```
-
-e. 
+e. The other column I would add, if the data was available to us, is area population. This data would help to explain why certain incidents are occuring in certain areas.
 
 # App #2: Top Location by Alert Type and Hour Dashboard (20 points) {-}
 
